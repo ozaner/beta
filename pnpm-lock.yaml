@@ -1,11 +1,18 @@
 lockfileVersion: '6.0'
 
 dependencies:
+  98.css:
+    specifier: ^0.1.20
+    version: 0.1.20
   astro:
     specifier: ^2.5.5
     version: 2.5.5
 
 packages:
+
+  /98.css@0.1.20:
+    resolution: {integrity: sha512-9oM+AZMfxG59Zz+bnAjIxAX2AKnBPkEJjf84ATto0wUNdRPxV+jhov1rHKe/wl6D0giuWwY603RxwrVVG4v2sA==}
+    dev: false
 
   /@ampproject/remapping@2.2.1:
     resolution: {integrity: sha512-lFMjJTrFL3j7L9yBxwYfCq2k6qqwHyzuUl/XBnif78PWTJYyL/dfowQHWE3sp6U6ZzqWiiIZnpTMO96zhkjwtg==}
