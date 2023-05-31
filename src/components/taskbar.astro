@@ -4,15 +4,43 @@ import timegear from '../images/timegear.png';
 import StartMenu from './start-menu.astro';
 ---
 
-<StartMenu></StartMenu>
+<dialog id="menudialog">
+	<StartMenu></StartMenu>
+</dialog>
 <div class ="taskbar window">
-  <button class="start">
+  <button class="start" onclick="window.menudialog.showModal()">
     <img src={timegear}>
     Start
   </button>
 </div>
 
+<script>
+	const dialog = document.getElementById("menudialog");
+	dialog?.addEventListener("click", onClick);
+
+	function onClick(event: Event) {
+		if (event.target === dialog && dialog instanceof HTMLDialogElement) {
+			dialog.close();
+		}
+	}
+</script>
+
 <style>
+	#menudialog {
+		/* deal with dialog defaults */
+		margin: 0;
+		padding: 0;
+		border: none;
+
+		height: fit-content;
+		position: fixed;
+		/* 26 (taskbar height) + 3*2 (padding above/beneath taskbar) = 32px*/
+		top: calc(100% - 32px);
+		transform: translateY(-100%);
+	}
+	#menudialog::backdrop {
+		background: transparent;
+	}
 	.taskbar {
 		overflow: hidden;
 		position: fixed;
