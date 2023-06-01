@@ -4,41 +4,42 @@ import timegear from '../images/timegear.png';
 import StartMenu from './start-menu.astro';
 ---
 
-<dialog id="menudialog">
+<div id="menucontainer">
 	<StartMenu></StartMenu>
-</dialog>
-<div class ="taskbar window">
-  <button class="start" onclick="window.menudialog.showModal()">
-    <img src={timegear}>
-    Start
-  </button>
+</div>
+<div class="taskbar window">
+	<button id="startbutton">
+		<img src={timegear}>
+		Start
+	</button>
 </div>
 
 <script>
-	const dialog = document.getElementById("menudialog");
-	dialog?.addEventListener("click", onClick);
+	const cont = document.getElementById("menucontainer")!;
+	const start = document.getElementById("startbutton")!;
 
-	function onClick(event: Event) {
-		if (event.target === dialog && dialog instanceof HTMLDialogElement) {
-			dialog.close();
+	//Start button can show and hide menu
+	start?.addEventListener('click', function() {
+		const invisible = cont.style.display === "none" || !cont.style.display;
+		cont.style.display = invisible ? "initial" : "none";
+	});
+
+	//All other clicks hide menu
+	document.addEventListener("click", function(event) {
+		if (event.target !== start && cont?.style.display !== "none") {
+			cont.style.display = "none";
 		}
-	}
+	}, true); // Enable event capturing!
 </script>
 
 <style>
-	#menudialog {
-		/* deal with dialog defaults */
-		margin: 0;
-		padding: 0;
-		border: none;
-
-		height: fit-content;
+	#menucontainer {
+		display: none;
 		position: fixed;
 		/* 26 (taskbar height) + 3*2 (padding above/beneath taskbar) = 32px*/
-		top: calc(100% - 32px);
-		transform: translateY(-100%);
+		bottom: 32px;
 	}
-	#menudialog::backdrop {
+	#menucontainer::backdrop {
 		background: transparent;
 	}
 	.taskbar {
@@ -49,7 +50,7 @@ import StartMenu from './start-menu.astro';
 		height: 26px;
 		display: flex;
 	}
-	.start {
+	#startbutton {
 		font-weight: bold;
 		font-size: 14px;
 		
@@ -59,7 +60,7 @@ import StartMenu from './start-menu.astro';
 		flex-wrap: nowrap;
 		gap: 4px;
 	}
-	.start img {
+	#startbutton img {
 		width: 17px;
 		height: 17px;
 		padding-bottom: 1px;
