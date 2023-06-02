@@ -26,7 +26,12 @@ import StartMenu from './start-menu.astro';
 
 	//All other clicks hide menu
 	document.addEventListener("click", function(event) {
-		if (event.target !== start && cont?.style.display !== "none") {
+		let target = event.target as Node;
+		let isStartButton = target === start;
+		let isMenuButton = cont.contains(target)
+			&& !(target instanceof HTMLButtonElement
+				|| target.parentElement instanceof HTMLButtonElement);
+		if (cont?.style.display !== "none" && !isMenuButton && !isStartButton) {
 			cont.style.display = "none";
 		}
 	}, true); // Enable event capturing!
