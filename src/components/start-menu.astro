@@ -3,7 +3,7 @@ import '98.css';
 import github from '../images/githubicon.png';
 import medium from '../images/mediumicon.png';
 import srccode from '../images/srccodeicon.png';
-import shutdown from '../images/shutdownicon.png';
+import restart from '../images/restarticon.png';
 ---
 
 <div class="start-menu window">
@@ -25,9 +25,9 @@ import shutdown from '../images/shutdownicon.png';
 			<img draggable="false" src={srccode} alt="magnifying-glass-over-document">
 			<span>Source Code</span>
 		</button>
-		<button aria-label="shut-down" id="shutdown-button">
-			<img draggable="false" src={shutdown} alt="monitor-closing">
-			<span>Shut Down</span>
+		<button aria-label="shut-down" id="restart-button">
+			<img draggable="false" src={restart} alt="monitor-closing">
+			<span>Restart</span>
 		</button>
 	</div>
 </div>
@@ -42,8 +42,8 @@ import shutdown from '../images/shutdownicon.png';
 	document.getElementById("src-button")?.addEventListener(
 		'click', () => window.open('https://github.com/ozaner/beta', '_blank')
 	);
-	document.getElementById("shutdown-button")?.addEventListener(
-		'click', () => open(location.href, '_self')?.close()
+	document.getElementById("restart-button")?.addEventListener(
+		'click', () => window.open('/beta/', '_self')
 	);
 </script>
 
