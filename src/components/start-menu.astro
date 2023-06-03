@@ -12,25 +12,40 @@ import shutdown from '../images/shutdownicon.png';
 		<span><b>Ozaner’s</b>&nbsp;Notes</span>
 	</div>
 	<div class="content">
-		<button aria-label="github">
+		<button aria-label="github" id="github-button">
 			<img draggable="false" src={github} alt="github-logo" class="invert-on-hover">
 			<span>Github</span>
 		</button>
-		<button aria-label="medium">
+		<button aria-label="medium" id="medium-button">
 			<img draggable="false" src={medium} alt="medium-logo" class="invert-on-hover">
 			<span>Medium</span>
 		</button>
 		<hr>
-		<button aria-label="source-code">
+		<button aria-label="source-code" id="src-button">
 			<img draggable="false" src={srccode} alt="magnifying-glass-over-document">
 			<span>Source Code</span>
 		</button>
-		<button aria-label="shut-down">
+		<button aria-label="shut-down" id="shutdown-button">
 			<img draggable="false" src={shutdown} alt="monitor-closing">
 			<span>Shut Down</span>
 		</button>
 	</div>
 </div>
+
+<script>
+	document.getElementById("github-button")?.addEventListener(
+		'click', () => window.open('https://github.com/ozaner', '_blank')
+	);
+	document.getElementById("medium-button")?.addEventListener(
+		'click', () => window.open('https://medium.com/@ozanerhansha', '_blank')
+	);
+	document.getElementById("src-button")?.addEventListener(
+		'click', () => window.open('https://github.com/ozaner/beta', '_blank')
+	);
+	document.getElementById("shutdown-button")?.addEventListener(
+		'click', () => open(location.href, '_self')?.close()
+	);
+</script>
 
 <style>
 	.start-menu {
