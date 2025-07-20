@@ -25,13 +25,15 @@ import Window from './window.astro';
 		left:0px;
 	}
 	.workspace {
-		/* background-color: aqua; */
-		/* height: calc(100vh - 32px); */
+		position: relative;
+		height: calc(100vh - 32px);
+		overflow: hidden;
 	}
 	.window-slot {
-		position: fixed;
+		position: absolute;
 		left: 20%;
+		top: 20px;
 		width: 70%;
-		height: calc(100vh - 38px);
+		height: calc(100vh - 58px);
 	}
 </style>

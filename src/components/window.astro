@@ -1,15 +1,17 @@
 ---
 import '98.css';
 import {Content, frontmatter} from '../pages/turing-test.md';
+
+const windowId = 'window-' + Math.random().toString(36).substr(2, 9);
 ---
 
-<div class="window">
+<div class="window" id={windowId} data-state="normal">
 	<div class="title-bar">
 		<div class="title-bar-text">{frontmatter.title} - Ozaner's Article Explorer</div>
 		<div class="title-bar-controls">
-			<button aria-label="Minimize"></button>
-			<button aria-label="Maximize"></button>
-			<button aria-label="Close"></button>
+			<button aria-label="Minimize" class="minimize-btn"></button>
+			<button aria-label="Maximize" class="maximize-btn"></button>
+			<button aria-label="Close" class="close-btn"></button>
 		</div>
 	</div>
 	<article class="window-body">
@@ -17,19 +19,264 @@ import {Content, frontmatter} from '../pages/turing-test.md';
 	</article>
 </div>
 
+<script define:vars={{ windowId }}>
+	const windowEl = document.getElementById(windowId);
+	const titleBar = windowEl.querySelector('.title-bar');
+	const minimizeBtn = windowEl.querySelector('.minimize-btn');
+	const maximizeBtn = windowEl.querySelector('.maximize-btn');
+	const closeBtn = windowEl.querySelector('.close-btn');
+	
+	let isDragging = false;
+	let currentX;
+	let currentY;
+	let initialX;
+	let initialY;
+	let xOffset = 0;
+	let yOffset = 0;
+	
+	// Store original position and size for restoring
+	let originalPosition = {
+		left: windowEl.style.left || '20%',
+		top: windowEl.style.top || '0px',
+		width: windowEl.style.width || '70%',
+		height: windowEl.style.height || 'calc(100vh - 38px)'
+	};
+	
+	// Get window boundaries
+	function getWindowBounds() {
+		const rect = windowEl.getBoundingClientRect();
+		const containerRect = windowEl.parentElement.getBoundingClientRect();
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+		const taskbarHeight = 32; // Height of the taskbar
+		
+		// Calculate how much we can move based on container position
+		const maxLeft = -containerRect.left; // Allow window to go all the way to left edge
+		const maxRight = viewportWidth - containerRect.left - rect.width; // Allow window to go all the way to right edge
+		const maxTop = -containerRect.top;
+		const maxBottom = viewportHeight - containerRect.top - rect.height - taskbarHeight;
+		
+		return {
+			minX: maxLeft,
+			maxX: maxRight,
+			minY: maxTop,
+			maxY: maxBottom
+		};
+	}
+	
+	// Constrain position to viewport
+	function constrainPosition(x, y) {
+		const bounds = getWindowBounds();
+		
+		// Smoothly constrain without vibration
+		x = Math.max(bounds.minX, Math.min(x, bounds.maxX));
+		y = Math.max(bounds.minY, Math.min(y, bounds.maxY));
+		
+		return { x, y };
+	}
+	
+	// Dragging functionality
+	function dragStart(e) {
+		// Only allow dragging from the title bar, not from buttons
+		if (e.target.tagName === 'BUTTON' || windowEl.dataset.state === 'maximized') {
+			return;
+		}
+		
+		if (e.type === "touchstart") {
+			initialX = e.touches[0].clientX - xOffset;
+			initialY = e.touches[0].clientY - yOffset;
+		} else {
+			initialX = e.clientX - xOffset;
+			initialY = e.clientY - yOffset;
+		}
+		
+		if (e.target === titleBar || titleBar.contains(e.target)) {
+			isDragging = true;
+			windowEl.style.transition = 'none';
+			// Add dragging class to prevent text selection
+			windowEl.classList.add('dragging');
+		}
+	}
+	
+	function dragEnd(e) {
+		initialX = currentX;
+		initialY = currentY;
+		isDragging = false;
+		windowEl.style.transition = '';
+		// Remove dragging class
+		windowEl.classList.remove('dragging');
+	}
+	
+	function drag(e) {
+		if (isDragging) {
+			e.preventDefault();
+			
+			let proposedX, proposedY;
+			
+			if (e.type === "touchmove") {
+				proposedX = e.touches[0].clientX - initialX;
+				proposedY = e.touches[0].clientY - initialY;
+			} else {
+				proposedX = e.clientX - initialX;
+				proposedY = e.clientY - initialY;
+			}
+			
+			// Apply constraints
+			const constrained = constrainPosition(proposedX, proposedY);
+			currentX = constrained.x;
+			currentY = constrained.y;
+			
+			xOffset = currentX;
+			yOffset = currentY;
+			
+			setTranslate(currentX, currentY, windowEl);
+		}
+	}
+	
+	function setTranslate(xPos, yPos, el) {
+		el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+	}
+	
+	// Window controls
+	function minimizeWindow() {
+		windowEl.style.display = 'none';
+		// You could emit an event here to update taskbar if needed
+	}
+	
+	function maximizeWindow() {
+		if (windowEl.dataset.state === 'maximized') {
+			// Restore to normal
+			windowEl.dataset.state = 'normal';
+			windowEl.style.position = 'absolute';
+			windowEl.style.left = originalPosition.left;
+			windowEl.style.top = originalPosition.top;
+			windowEl.style.width = originalPosition.width;
+			windowEl.style.height = originalPosition.height;
+			windowEl.style.transform = '';
+			xOffset = 0;
+			yOffset = 0;
+		} else {
+			// Save current position before maximizing
+			originalPosition.left = windowEl.style.left || originalPosition.left;
+			originalPosition.top = windowEl.style.top || originalPosition.top;
+			originalPosition.width = windowEl.style.width || originalPosition.width;
+			originalPosition.height = windowEl.style.height || originalPosition.height;
+			
+			// Maximize - true fullscreen by breaking out of container
+			windowEl.dataset.state = 'maximized';
+			windowEl.style.position = 'fixed';
+			windowEl.style.left = '0';
+			windowEl.style.top = '0';
+			windowEl.style.width = '100vw';
+			windowEl.style.height = '100vh';
+			windowEl.style.transform = '';
+			xOffset = 0;
+			yOffset = 0;
+		}
+	}
+	
+	function closeWindow() {
+		windowEl.style.display = 'none';
+		// You could emit an event here to remove from taskbar if needed
+	}
+	
+	// Ensure window stays within bounds on resize
+	function handleResize() {
+		if (windowEl.dataset.state !== 'maximized') {
+			const constrained = constrainPosition(xOffset, yOffset);
+			if (constrained.x !== xOffset || constrained.y !== yOffset) {
+				xOffset = constrained.x;
+				yOffset = constrained.y;
+				setTranslate(xOffset, yOffset, windowEl);
+			}
+		}
+	}
+	
+	// Double click title bar to maximize/restore
+	titleBar.addEventListener('dblclick', (e) => {
+		if (e.target.tagName !== 'BUTTON') {
+			maximizeWindow();
+		}
+	});
+	
+	// Add event listeners
+	titleBar.addEventListener('mousedown', dragStart);
+	document.addEventListener('mousemove', drag);
+	document.addEventListener('mouseup', dragEnd);
+	
+	// Touch events for mobile
+	titleBar.addEventListener('touchstart', dragStart);
+	document.addEventListener('touchmove', drag);
+	document.addEventListener('touchend', dragEnd);
+	
+	// Button events
+	minimizeBtn.addEventListener('click', minimizeWindow);
+	maximizeBtn.addEventListener('click', maximizeWindow);
+	closeBtn.addEventListener('click', closeWindow);
+	
+	// Window resize event
+	window.addEventListener('resize', handleResize);
+</script>
+
 <style>
 	.window {
 		height: 100%;
 		display: flex;
 		flex-direction: column;
+		position: absolute;
+		transition: all 0.2s ease;
 	}
+	
+	.window[data-state="maximized"] {
+		z-index: 1000;
+	}
+	
+	.window.dragging {
+		user-select: none;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+	}
+	
+	.window.dragging * {
+		user-select: none !important;
+		-webkit-user-select: none !important;
+		-moz-user-select: none !important;
+		-ms-user-select: none !important;
+		pointer-events: none;
+	}
+	
+	.title-bar {
+		cursor: move;
+		user-select: none;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+	}
+	
+	.title-bar-text {
+		user-select: none;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		pointer-events: none;
+	}
+	
+	.title-bar-controls {
+		pointer-events: auto;
+	}
+	
+	.title-bar-controls button {
+		pointer-events: auto;
+	}
+	
 	.window-body {
 		background-color: white;
 		margin: 2px;
 		padding: 5px;
 		box-shadow: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
 		overflow: auto;
-
+		flex: 1;
 		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	}
 </style>
